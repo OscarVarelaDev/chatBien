@@ -1,0 +1,1 @@
+export const URL_BASE = 'http://chat-backend.escotel.mx:5000/api'

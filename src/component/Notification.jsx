@@ -1,13 +1,13 @@
-  import { Button, notification, Space } from 'antd';
+  import { Button, message, notification, Space } from 'antd';
   import MailOutlined from '@ant-design/icons/MailOutlined';
 
-  const Notification = (value) => {
+  const Notification = ({text}) => {
     const [api, contextHolder] = notification.useNotification();
     const openNotification = (placement) => {
       api.info({
         message: `Notificacion ${"Mensaje"}`,
-        description:
-         (value?"Tienes mensajes sin leer":"No tienes mensajes en tu chat" ) ,
+        description: text ,
+        duration: 2,
         placement,
       });
       
@@ -16,8 +16,9 @@
       <>
         {contextHolder}
         <Space>
-          <Button type="primary" onClick={ openNotification('left')} icon={<MailOutlined />}>
-            Tienes mensajes sin leer
+          <Button type="primary" onClick={ openNotification('bottomLeft')} icon={<MailOutlined />}>
+            {text}
+
           </Button>
          
         </Space>
