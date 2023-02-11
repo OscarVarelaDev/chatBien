@@ -5,9 +5,7 @@ const { Meta } = Card;
 export default function Message(dataMessages ) {
 
     return(
-    
         <Card >
-
             <Meta style={{ width: "100%",color:"black"}}
               avatar={<Avatar shape="square" gap={"6"} size="large"   icon={<UserOutlined />} />} 
               title= {dataMessages.EmisorNombre}

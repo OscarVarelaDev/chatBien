@@ -3,24 +3,33 @@ import { useEffect, useState } from "react";
 import Message from "./Message";
 import { io } from "socket.io-client";
 import Loading from "./Loading";
-import { DownCircleOutlined,CloseOutlined } from '@ant-design/icons'
-
+import { DownCircleOutlined, CloseOutlined } from '@ant-design/icons'
 
 const URL = "http://chat-backend.escotel.mx:5000";
 const socket = io(URL);
 
-export default function MostrarMensajes({ messages }) {
-  //Tengo todos mis datos actualizados en allMessages
-
+export default function MostrarMensajes({ messages, addMensaje, asistenciaId, dataAllMessage }) {
   const [allMessages, setAllMessages] = useState([]);
-  const { AsistenciaId } = messages[0];
-  const { Mensajes } = messages[0];
-  const EmisorNombre = Mensajes[0].EmisorNombre;
+  const [allNewMessages, setAllNewMessages] = useState({});
 
 
   useEffect(() => {
-    setAllMessages([...Mensajes]);
+    const filtroAsistenciaId = dataAllMessage.filter((item) => item.AsistenciaId === asistenciaId);
+    const [AsistenciaId] = filtroAsistenciaId
+    const { Mensajes } = AsistenciaId;
+    setAllNewMessages(Mensajes)
+    const nuevosMensajes = Mensajes.map((m) => {
+      return {
+        "EmisorId": m.EmisorId,
+        "EmisorNombre": m.EmisorNombre,
+        "Fecha": m.Fecha,
+        "Mensaje": m.Mensaje,
+        "Leido": false
+      }
+    })
+    setAllMessages(nuevosMensajes)
   }, []);
+
 
   const goToLastMessage = () => {
     const div = document.getElementById('mensajeRenderizados');
@@ -29,32 +38,30 @@ export default function MostrarMensajes({ messages }) {
   }
 
 
-  const handdleLastMessage = (e) => {
-    goToLastMessage()
-    
-  }
-
   const handleFinish = ({ userMessage }) => {
-
+    const { EmisorNombre } = allNewMessages[0];
+    
     const newMessage = {
-      "EmisorId": AsistenciaId,
+      "EmisorId": asistenciaId,
       "EmisorNombre": EmisorNombre,
       "Fecha": new Date().toISOString(),
       "Mensaje": userMessage,
-      "Leido": false
+      "Leido": false,
+      "TodosLosMensajes": allNewMessages
     }
-    sendData(newMessage, AsistenciaId);
-    socket.emit("message", { userMessage: newMessage, });
-    setAllMessages([...allMessages, newMessage]);
-    //limpiar el imput
+    console.log("NewMessage",newMessage)
+
+  //sendData(newMessage, asistenciaId);
+    socket.emit("message", { userMessage: newMessage,dataAllMessage });
+    setAllMessages([...allNewMessages, newMessage]);
+
     document.getElementById("send_message").reset();
-  
-
-
   }
 
-  const sendData = (newMessage, AsistenciaId) => {
-    const response = fetch(`http://chat-backend.escotel.mx:5000/api/newMensaje/${AsistenciaId}`, {
+
+
+  const sendData = (newMessage) => {
+    fetch(`http://chat-backend.escotel.mx:5000/api/newMensaje/${asistenciaId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -67,56 +74,44 @@ export default function MostrarMensajes({ messages }) {
   };
 
 
-  useEffect(() => {
-    const handleIncomingMessages = ({ userMessage }) => {
-      setAllMessages([...messages, userMessage]);
-    }
-    socket.on("message", handleIncomingMessages);
-    return () => {
-      socket.off("message", handleIncomingMessages);
-    }
-  }, [allMessages]);
-
-
-
-  if (!messages.length || !Mensajes.length) {
-    return <Loading />
-  }
-
   return (
     <>
       <div className="container m-1 w-100">
         <div className="card">
           <div className="card-body">
-          <div
-              style={
-                {//colocar en la parte derecha del chat
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  alignItems: "center",
-                  padding: "10px",
-                  borderRadius: "5px",
-                  width: "100%",
-                  position: "relative",
-                  cursor: "pointer",
-                  color: "red",
-                  fontSize: "20px",
+            <div >
+              <div
+                style={
+                  {
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    padding: "10px",
+                    borderRadius: "5px",
+                    width: "100%",
+                    position: "relative",
+                    cursor: "pointer",
+                    color: "red",
+                    fontSize: "20px",
+                  }
                 }
-              }
-            ><CloseOutlined />
-            
+
+              >
+                <CloseOutlined />
+              </div>
             </div>
             <h5 className="text-center" style={{
               fontSize: "20px",
-              color: "black",
+              color: "#1581af",
               textAlign: "center",
-              marginTop: "5px",
+              fontWeight: "bold",
+              
             }}>Chat</h5>
-           
+
             {/* Chat */}
 
           </div>
-          <div 
+          <div
             style={{
               borderRadius: "5px",
               padding: "20px",
@@ -134,42 +129,37 @@ export default function MostrarMensajes({ messages }) {
               }}
             >
               <div id="mensajeRenderizados">
-
-              {allMessages.map((m, i) => (
-                <Message 
-                  //crear un id unico para cada mensaje
-
-                  key={i}
-                  EmisorNombre={m.EmisorNombre}
-                  Mensaje={m.Mensaje}
-                  Fecha=
-                  {
-                    new Date(m.Fecha).toLocaleDateString('es-mx', {
-                      weekday: "long", year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "numeric"
-                    })
-                  }
-                 
-
-                />
-              ))
-
-              }
-            </div>
+                {
+                  allMessages.map((m, i) => (
+                    <Message
+                      key={i}
+                      EmisorNombre={m.EmisorNombre}
+                      Mensaje={m.Mensaje}
+                      Fecha=
+                      {
+                        new Date(m.Fecha).toLocaleDateString('es-mx', {
+                          weekday: "long", year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "numeric"
+                        })
+                      }
+                    />
+                  ))
+                }
+              </div>
             </div>
 
           </div>
           <div className="card-footer">
             <div style={{ textAlign: "center" }}>
-              <DownCircleOutlined 
-              style={{
-                display: "block",
-                position: "end",
-                fontSize: "40px",
-                padding: "15px",
-                color: "rgb(69, 69, 69)",
-                cursor: "pointer",
-              }}
-                onClick={handdleLastMessage} />
+              <DownCircleOutlined
+                style={{
+                  display: "block",
+                  position: "end",
+                  fontSize: "40px",
+                  padding: "15px",
+                  color: "rgb(69, 69, 69)",
+                  cursor: "pointer",
+                }}
+                onClick={() => { goToLastMessage() }} />
               <p>Ir al último mensaje</p>
             </div>
             <Form name="send_message" style={{ paddingTop: "10px" }} onFinish={handleFinish}>
