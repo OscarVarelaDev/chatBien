@@ -51,7 +51,7 @@ export default function MostrarMensajes({ messages, addMensaje, asistenciaId, da
     }
     console.log("NewMessage",newMessage)
 
-  //sendData(newMessage, asistenciaId);
+  sendData(newMessage, asistenciaId);
     socket.emit("message", { userMessage: newMessage,dataAllMessage });
     setAllMessages([...allNewMessages, newMessage]);
 

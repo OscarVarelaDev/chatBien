@@ -2,7 +2,6 @@ import Chat from "./Chat";
 import { Row, Col, Table, Button } from "antd";
 import { useEffect, useState } from "react";
 import Notification from "../../component/Notification";
-import Loading from "../../component/Loading";
 import { io } from "socket.io-client";
 
 
@@ -42,6 +41,7 @@ const Home = () => {
     fetchData();
   }, []);
 
+
   const fetchData = async () => {
     const url = `http://chat-backend.escotel.mx:5000/api/chatsCabina`;
     try {
@@ -57,23 +57,19 @@ const Home = () => {
   };
 
 
+
   useEffect(() => {
     socket.on("message", newMessage => {
-      console.log("Asegurarme Llegue bie",newMessage)
       const { body: { userMessage } } = newMessage
       const {body:{dataAllMessage}} = newMessage
-      console.log("UserMessage",userMessage)
-      console.log("dataAllMessage",dataAllMessage)
-      //duplicar el array y agregar  el mensaje por asistencia
-        console.log(userMessage.EmisorId)
-      const newData =dataAllMessage.map((x)=>{
+  
+      const newData =dataAllMessage.map((x,i)=>{
+          x.key= x.i
           if(x.AsistenciaId === userMessage.EmisorId){
             x.Mensajes.push(userMessage)
           }
           return x
-       
       })
-      console.log("newData",newData)
       setDataAllMessage(newData)
     })
     return () => socket.off("message")
@@ -82,10 +78,10 @@ const Home = () => {
 
   useEffect(() => {
     const dataSource = dataAllMessage.map((x, i) => ({
+      key: x.AsistenciaId,
       AsistenciaId: x.AsistenciaId,
       Mensajes: x.Mensajes[x.Mensajes.length - 1].Mensaje,
       MensajesNoLeidos: !x.MensajesNoLeidos ? <Notification text={"Tienes mensajes nuevos sin leer"} /> : <Notification text={"No tienes mensajes nuevos "} />,
-      key: x.AsistenciaId,
       Acciones: (
         <Button type="primary" id="botones" onClick={handleClick}>
           Ver Mensajes

@@ -10,11 +10,12 @@ export default function Loading() {
           height: "100%",
           justifyContent: "center",
           alignItems: "center",
+          marginTop: "20%",
           
         }}
       >
         <Space>
-          <Spin tip="Loading" size="large">
+          <Spin tip="Loading" style={{fontSize:"30px" }} size="large">
             <div className="content" />
           </Spin>
         </Space>
