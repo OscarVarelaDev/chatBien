@@ -13,7 +13,6 @@ function Chat({asistenciaId,
   }) {
   const [isLoading, setIsLoading] = useState(true);
 
-  
   return (
     <>
       {isLoading ? <MostrarMensajes

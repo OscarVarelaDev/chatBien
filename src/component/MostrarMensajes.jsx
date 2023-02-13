@@ -8,49 +8,58 @@ import { DownCircleOutlined, CloseOutlined } from '@ant-design/icons'
 const URL = "http://chat-backend.escotel.mx:5000";
 const socket = io(URL);
 
-export default function MostrarMensajes({ 
+export default function MostrarMensajes({
   asistenciaId,
   dataAllMessage,
   setMostrarMensajes,
   mostrarMensajes,
   handleClick,
-  }) {
+}) {
+
   const [allMessages, setAllMessages] = useState([]);
   const [allNewMessages, setAllNewMessages] = useState({});
   const [goLastMessage, setGoLastMessage] = useState(false);
 
+
   useEffect(() => {
-  
-    const  filtroAsistenciaId =  dataAllMessage.filter((item) => item.AsistenciaId === asistenciaId);
+    const filtroAsistenciaId = dataAllMessage.filter((item) => item.AsistenciaId === asistenciaId);
     const [AsistenciaId] = filtroAsistenciaId
     const { Mensajes } = AsistenciaId;
-    setAllNewMessages(Mensajes)
-    
-    const  nuevosMensajes = Mensajes.map((m) => {
+
+
+    const nuevosMensajes = Mensajes.map((m) => {
       return {
         "EmisorId": m.EmisorId,
         "EmisorNombre": m.EmisorNombre,
         "Fecha": m.Fecha,
         "Mensaje": m.Mensaje,
         "Leido": m.leido,
-        
+
       }
     })
     setAllMessages(nuevosMensajes)
-    
-    
+
+
 
   }, []);
 
+
   const goToLastMessage = () => {
     const div = document.getElementById('mensajeRenderizados');
-     const newArraY= Array.from(div.children)
-      const lastElement = newArraY[newArraY.length-1]
-      lastElement.scrollIntoView();
+    const newArraY = Array.from(div.children)
+    const lastElement = newArraY[newArraY.length - 1]
+    lastElement.scrollIntoView();
   }
 
   const handleFinish = ({ userMessage }) => {
-      const { EmisorNombre } = allNewMessages[0];
+  
+    console.log(dataAllMessage)
+   // const { EmisorNombre } = allNewMessages[0];
+      const filterAsistenciaId=dataAllMessage.filter((item)=>item.AsistenciaId===asistenciaId)
+        const [AsistenciaId] = filterAsistenciaId
+        const { Mensajes } = AsistenciaId;
+        const {EmisorNombre}=Mensajes[0]
+
     const newMessage = {
 
       "EmisorId": asistenciaId,
@@ -58,14 +67,14 @@ export default function MostrarMensajes({
       "Fecha": new Date().toISOString(),
       "Mensaje": userMessage,
       "Leido": true,
-      "TodosLosMensajes": allNewMessages
+     // "TodosLosMensajes": allNewMessages
     }
- 
 
-   // sendData(newMessage, asistenciaId);
-    socket.emit("message", { userMessage: newMessage, dataAllMessage });
 
-    const addNewMessage=allMessages.map((m)=>{
+    // sendData(newMessage, asistenciaId);
+   // socket.emit("message", { userMessage: newMessage, dataAllMessage });
+
+    const addNewMessage = allMessages.map((m) => {
       return {
         "EmisorId": m.EmisorId,
         "EmisorNombre": m.EmisorNombre,
@@ -80,9 +89,6 @@ export default function MostrarMensajes({
     goToLastMessage()
     document.getElementById("send_message").reset();
   }
-
-
-
   const sendData = (newMessage) => {
     fetch(`http://chat-backend.escotel.mx:5000/api/newMensaje/${asistenciaId}`, {
       method: "PUT",
@@ -98,13 +104,16 @@ export default function MostrarMensajes({
   const closeChat = () => {
     setMostrarMensajes(!mostrarMensajes)
     handleClick()
-    
+
   }
 
   return (
     <>
-      <div className="container m-1 w-100" >
-        <div className="card" style={{backgroundColor:"#ffffff"}} >
+      <div className="container m-1 w-100" style={{
+        maxHeight: "100%",
+        height: "100%", width: "100%", maxWidth: "100%"
+      }} >
+        <div className="card" style={{ backgroundColor: "#ffffff" }} >
           <div className="card-body">
             <div >
               <div
@@ -121,7 +130,7 @@ export default function MostrarMensajes({
                     color: "#362FD9",
                     fontSize: "20px",
                   }
-                } 
+                }
               >
                 <CloseOutlined
                   onClick={closeChat}
@@ -133,7 +142,7 @@ export default function MostrarMensajes({
               color: "#1581af",
               textAlign: "center",
               fontWeight: "bold",
-             
+
 
             }}>Chat</h5>
 
@@ -143,7 +152,7 @@ export default function MostrarMensajes({
               borderRadius: "5px",
               padding: "0px",
               backgroundColor: "#ffff",
-              height: "600px",
+              height: "500px",
               overflow: "auto",
             }}
           >
@@ -161,8 +170,8 @@ export default function MostrarMensajes({
                 //separar lo mensajes
                 gap: "5px",
                 paddingBottom: "170px",
-                
-                
+
+
               }}>
                 {
                   allMessages.map((m, i) => (
@@ -176,12 +185,12 @@ export default function MostrarMensajes({
                           weekday: "long", year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "numeric"
                         })
                       }
-                      
+
                     />
 
                   ))
-                  }
-                  
+                }
+
               </div>
             </div>
 
@@ -201,14 +210,14 @@ export default function MostrarMensajes({
               <p>Ir al último mensaje</p>
             </div>
             <Form name="send_message" style={{ paddingTop: "0px" }} onFinish={handleFinish}  >
-            
+
               <div className="d-flex">
                 <Form.Item
                   style={{ width: "100%" }}
                   name="userMessage"
                   rules={[{ required: true, message: "El campo es requerido" }]}
                 >
-                  <Input.TextArea autoSize placeholder="Ingresa tu mensaje"  id="btn-chat-enviarDatos" 
+                  <Input.TextArea autoSize placeholder="Ingresa tu mensaje" id="btn-chat-enviarDatos"
                   />
                 </Form.Item>
 

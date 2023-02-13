@@ -1,65 +1,41 @@
 import Chat from "./Chat";
-import { Row, Col, Table, Button, Alert } from "antd";
+import { Row, Col, Button } from "antd";
 import { useEffect, useState } from "react";
-import Notification from "../../component/Notification";
 import { io } from "socket.io-client";
-import { Badge } from "antd";
-import { AlertOutlined } from "@ant-design/icons";
+import {
+  MenuFoldOutlined,
+  MailOutlined,
+  MenuUnfoldOutlined
+} from '@ant-design/icons';
+
+
 
 
 const Home = () => {
   const [dataAllMessage, setDataAllMessage] = useState([]);
   const [asistenciaId, setAsistenciaId] = useState("");
   const [mostrarMensajes, setMostrarMensajes] = useState(false);
-  const [dataTable, setDataTable] = useState([]);
-  const [notification, setNotification] = useState(false);
-
-  
+  const [collapsed, setCollapsed] = useState(false);
   const socket = io("http://chat-backend.escotel.mx:5000");
 
+  const toggleCollapsed = () => {
 
-  const columns = [
-    {
-      title: "Asistencia Id",
-      dataIndex: "AsistenciaId",
-      key: "AsistenciaId",
-    },
-    {
-      title: "Ultimo mensaje",
-      dataIndex: "Mensajes",
-      key: "Mensajes",
-    },
-    {
-      title: "Mensajes No leidos ",
-      dataIndex: "MensajesNoLeidos",
-      key: "MensajesNoLeidos",
-
-    },
-    {
-      title: "",
-      dataIndex: "Acciones",
-      render: (_, mensaje) => <Button type="primary" id="botones" onClick={() => handleClick(mensaje.key)}>Ver mensajes</Button>
-    },
-
-  ];
+    setCollapsed(!collapsed);
+  };
 
   useEffect(() => {
-    fetchData();
-  }, []);
 
-  const fetchData = async () => {
     const url = `http://chat-backend.escotel.mx:5000/api/chatsCabina`;
-    try {
+    const consultarApi = async () => {
       const response = await fetch(url);
-      const data = await response.json();
-      setDataAllMessage(data);
-    
-    }
+      const result = await response.json();
+      console.log("ResultApi",result)
+      setDataAllMessage(result)
+      console.log(dataAllMessage)
+    };
+    consultarApi();
 
-    catch (error) {
-      console.log(error)
-    }
-  };
+  }, []);
 
 
 
@@ -67,63 +43,50 @@ const Home = () => {
     socket.on("message", newMessage => {
       const { body: { userMessage } } = newMessage
       const { body: { dataAllMessage } } = newMessage
-
-      const newData = dataAllMessage.map((x, i) => {
+      /*    
+            const newData = dataAllMessage.map((x, i) => {
       
-        if (x.AsistenciaId === userMessage.EmisorId) {
-          x.MensajesNoLeidos = true
-          x.Mensajes.push(userMessage)
-        }
-        return x
-      })
-      setDataAllMessage(newData)
-   
+              if (x.AsistenciaId === userMessage.EmisorId) {
+                x.MensajesNoLeidos = true
+                x.Mensajes.push(userMessage)
+              }
+              return x
+            })
+            setDataAllMessage(newData) */
+
     })
     return () => socket.off("message")
   }, [socket.on])
 
   const handleClick = (key) => {
-    const botones = document.querySelectorAll("#botones");
-
-    if (mostrarMensajes) {
-      botones.forEach((boton) => {
-        boton.hidden=false;
-        boton.innerHTML = "Ver Mensajes";
-      });
-    } else { 
-
-      botones.forEach((boton) => {
-        boton.hidden=true;
-        boton.innerHTML = "Ocultar Mensajes";
-
-      });
-    }
     setMostrarMensajes(!mostrarMensajes);
-    setAsistenciaId(key);
-    
+    const { AsistenciaId } = dataAllMessage[0];
+    setAsistenciaId(AsistenciaId);
+    console.log("click")
+
   }
-
-  useEffect(() => {
-
-   
-    const dataSource = dataAllMessage.map((x, i) => ({
-      key: x.AsistenciaId,
-      AsistenciaId: x.AsistenciaId,
-      Mensajes: x.Mensajes[x.Mensajes.length - 1].Mensaje,
-      MensajesNoLeidos:x.MensajesNoLeidos ,
-      Acciones: (
-        <Button type="primary" id="botones" onClick={handleClick}>
-          Ver Mensajes
-        </Button>
-
-      ),
-    }
-    ));
+  /* 
+    useEffect(() => {
   
-    setDataTable(dataSource)
-  }, [dataAllMessage])
-
   
+      const dataSource = dataAllMessage.map((x, i) => ({
+        key: x.AsistenciaId,
+        AsistenciaId: x.AsistenciaId,
+        Mensajes: x.Mensajes[x.Mensajes.length - 1].Mensaje,
+        MensajesNoLeidos: x.MensajesNoLeidos,
+        Acciones: (
+          <Button type="primary" id="botones" onClick={handleClick}>
+            Ver Mensajes
+          </Button>
+  
+        ),
+      }
+      ));
+  
+      setDataTable(dataSource)
+    }, [dataAllMessage])
+   */
+
 
   return (
     <Row   >
@@ -131,42 +94,31 @@ const Home = () => {
         xs={mostrarMensajes ? 12 : 24}
         sm={mostrarMensajes ? 12 : 24}
         md={mostrarMensajes ? 16 : 24}
-        lg={mostrarMensajes ? 12 : 24}
-        xl={mostrarMensajes ? 12: 24}
-
+        lg={mostrarMensajes ? 3 : 24}
+        xl={mostrarMensajes ? 3 : 24}
       >
-        <Table
-        className="rowChats" columns={columns} rowKey={x => x.AsistenciaId} dataSource={dataTable
-          .map((x) => {
-            return {
-              ...x,
-              MensajesNoLeidos: x.MensajesNoLeidos ? <Notification text={"Tienes mensajes nuevos"}/>
-            :
-              <Notification text={"No tienes mensajes nuevos"}/>
-
-            }
-          })
-
-        } />
-
-
+        <div style={{
+          padding: 24, minHeight: 280, background: '#fff',
+          
+        }}>
+          <Button type="primary" onClick={handleClick} style={{ marginBottom: 16 }}>
+            Abrir mi chat</Button>
+        </div>
       </Col>
       <Col
         xs={mostrarMensajes ? 8 : 0}
         sm={mostrarMensajes ? 8 : 0}
         md={mostrarMensajes ? 10 : 0}
-        lg={mostrarMensajes ? 12 : 0}
-        xl={mostrarMensajes ? 12 : 0}
+        lg={mostrarMensajes ? 21 : 0}
+        xl={mostrarMensajes ? 21 : 0}
       >
-
-        {mostrarMensajes ? <Chat
+        {mostrarMensajes?<Chat
           dataAllMessage={dataAllMessage}
           asistenciaId={asistenciaId}
           setMostrarMensajes={setMostrarMensajes}
           mostrarMensajes={mostrarMensajes}
           handleClick={handleClick}
-
-        /> : null}
+        />:null}
       </Col>
     </Row>
 
