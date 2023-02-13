@@ -16,7 +16,12 @@
       <>
         {contextHolder}
         <Space>
-          <Button type="primary" onClick={ openNotification('bottomLeft')} icon={<MailOutlined />}>
+          <Button type="primary" style={{
+            width: "250px",
+            height: "100%",
+            maxHeight: "100%",
+            maxWidth: "100%",
+          }} onClick={ openNotification('bottomLeft')} icon={<MailOutlined />}>
             {text}
 
           </Button>

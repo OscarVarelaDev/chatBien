@@ -8,53 +8,76 @@ import { DownCircleOutlined, CloseOutlined } from '@ant-design/icons'
 const URL = "http://chat-backend.escotel.mx:5000";
 const socket = io(URL);
 
-export default function MostrarMensajes({ messages, addMensaje, asistenciaId, dataAllMessage }) {
+export default function MostrarMensajes({ 
+  asistenciaId,
+  dataAllMessage,
+  setMostrarMensajes,
+  mostrarMensajes,
+  handleClick,
+  }) {
   const [allMessages, setAllMessages] = useState([]);
   const [allNewMessages, setAllNewMessages] = useState({});
-
+  const [goLastMessage, setGoLastMessage] = useState(false);
 
   useEffect(() => {
-    const filtroAsistenciaId = dataAllMessage.filter((item) => item.AsistenciaId === asistenciaId);
+  
+    const  filtroAsistenciaId =  dataAllMessage.filter((item) => item.AsistenciaId === asistenciaId);
     const [AsistenciaId] = filtroAsistenciaId
     const { Mensajes } = AsistenciaId;
     setAllNewMessages(Mensajes)
-    const nuevosMensajes = Mensajes.map((m) => {
+    
+    const  nuevosMensajes = Mensajes.map((m) => {
       return {
         "EmisorId": m.EmisorId,
         "EmisorNombre": m.EmisorNombre,
         "Fecha": m.Fecha,
         "Mensaje": m.Mensaje,
-        "Leido": false
+        "Leido": m.leido,
+        
       }
     })
     setAllMessages(nuevosMensajes)
-  }, []);
+    
+    
 
+  }, []);
 
   const goToLastMessage = () => {
     const div = document.getElementById('mensajeRenderizados');
-    let lastElement = div.lastElementChild;
-    lastElement.scrollIntoView();
+     const newArraY= Array.from(div.children)
+      const lastElement = newArraY[newArraY.length-1]
+      lastElement.scrollIntoView();
   }
 
-
   const handleFinish = ({ userMessage }) => {
-    const { EmisorNombre } = allNewMessages[0];
-    
+      const { EmisorNombre } = allNewMessages[0];
     const newMessage = {
+
       "EmisorId": asistenciaId,
       "EmisorNombre": EmisorNombre,
       "Fecha": new Date().toISOString(),
       "Mensaje": userMessage,
-      "Leido": false,
+      "Leido": true,
       "TodosLosMensajes": allNewMessages
     }
-    console.log("NewMessage",newMessage)
+ 
 
-  sendData(newMessage, asistenciaId);
-    socket.emit("message", { userMessage: newMessage,dataAllMessage });
-    setAllMessages([...allNewMessages, newMessage]);
+   // sendData(newMessage, asistenciaId);
+    socket.emit("message", { userMessage: newMessage, dataAllMessage });
 
+    const addNewMessage=allMessages.map((m)=>{
+      return {
+        "EmisorId": m.EmisorId,
+        "EmisorNombre": m.EmisorNombre,
+        "Fecha": m.Fecha,
+        "Mensaje": m.Mensaje,
+        "Leido": true
+      }
+    })
+    addNewMessage.push(newMessage)
+    setGoLastMessage(true)
+    setAllMessages(addNewMessage)
+    goToLastMessage()
     document.getElementById("send_message").reset();
   }
 
@@ -72,12 +95,16 @@ export default function MostrarMensajes({ messages, addMensaje, asistenciaId, da
       .then((data) => { console.log(data) })
 
   };
-
+  const closeChat = () => {
+    setMostrarMensajes(!mostrarMensajes)
+    handleClick()
+    
+  }
 
   return (
     <>
-      <div className="container m-1 w-100">
-        <div className="card">
+      <div className="container m-1 w-100" >
+        <div className="card" style={{backgroundColor:"#ffffff"}} >
           <div className="card-body">
             <div >
               <div
@@ -91,13 +118,14 @@ export default function MostrarMensajes({ messages, addMensaje, asistenciaId, da
                     width: "100%",
                     position: "relative",
                     cursor: "pointer",
-                    color: "red",
+                    color: "#362FD9",
                     fontSize: "20px",
                   }
-                }
-
+                } 
               >
-                <CloseOutlined />
+                <CloseOutlined
+                  onClick={closeChat}
+                />
               </div>
             </div>
             <h5 className="text-center" style={{
@@ -105,18 +133,17 @@ export default function MostrarMensajes({ messages, addMensaje, asistenciaId, da
               color: "#1581af",
               textAlign: "center",
               fontWeight: "bold",
-              
-            }}>Chat</h5>
+             
 
-            {/* Chat */}
+            }}>Chat</h5>
 
           </div>
           <div
             style={{
               borderRadius: "5px",
-              padding: "20px",
-              backgroundColor: "#f5f5f5",
-              height: "400px",
+              padding: "0px",
+              backgroundColor: "#ffff",
+              height: "600px",
               overflow: "auto",
             }}
           >
@@ -128,7 +155,15 @@ export default function MostrarMensajes({ messages, addMensaje, asistenciaId, da
 
               }}
             >
-              <div id="mensajeRenderizados">
+              <div id="mensajeRenderizados" style={{
+                display: "flex",
+                flexDirection: "column",
+                //separar lo mensajes
+                gap: "20px",
+                paddingBottom: "145px",
+                
+                
+              }}>
                 {
                   allMessages.map((m, i) => (
                     <Message
@@ -141,9 +176,12 @@ export default function MostrarMensajes({ messages, addMensaje, asistenciaId, da
                           weekday: "long", year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "numeric"
                         })
                       }
+                      
                     />
+
                   ))
-                }
+                  }
+                  
               </div>
             </div>
 
@@ -162,14 +200,16 @@ export default function MostrarMensajes({ messages, addMensaje, asistenciaId, da
                 onClick={() => { goToLastMessage() }} />
               <p>Ir al último mensaje</p>
             </div>
-            <Form name="send_message" style={{ paddingTop: "10px" }} onFinish={handleFinish}>
+            <Form name="send_message" style={{ paddingTop: "0px" }} onFinish={handleFinish}  >
+            
               <div className="d-flex">
                 <Form.Item
                   style={{ width: "100%" }}
                   name="userMessage"
                   rules={[{ required: true, message: "El campo es requerido" }]}
                 >
-                  <Input.TextArea autoSize placeholder="Ingresa tu mensaje" id="btn-chat-enviarDatos" />
+                  <Input.TextArea autoSize placeholder="Ingresa tu mensaje"  id="btn-chat-enviarDatos" 
+                  />
                 </Form.Item>
 
                 <Button
