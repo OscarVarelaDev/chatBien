@@ -159,8 +159,8 @@ export default function MostrarMensajes({
                 display: "flex",
                 flexDirection: "column",
                 //separar lo mensajes
-                gap: "20px",
-                paddingBottom: "145px",
+                gap: "5px",
+                paddingBottom: "170px",
                 
                 
               }}>

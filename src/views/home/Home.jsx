@@ -136,7 +136,6 @@ const Home = () => {
 
       >
         <Table
-          // pagination={{ pageSize: 3 }}
         className="rowChats" columns={columns} rowKey={x => x.AsistenciaId} dataSource={dataTable
           .map((x) => {
             return {
