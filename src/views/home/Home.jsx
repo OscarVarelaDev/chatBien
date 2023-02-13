@@ -17,7 +17,6 @@ const Home = () => {
   
   const socket = io("http://chat-backend.escotel.mx:5000");
 
-
   const columns = [
     {
       title: "Asistencia Id",
@@ -25,9 +24,8 @@ const Home = () => {
       key: "AsistenciaId",
     },
     {
-      title: "Ultimo mensaje",
+      title: "Mensajes",
       dataIndex: "Mensajes",
-      key: "Mensajes",
     },
     {
       title: "Mensajes No leidos ",
@@ -61,9 +59,11 @@ const Home = () => {
     }
   };
 
-
-
   useEffect(() => {
+
+    socket.on("newAsistencia", newAsistencia => {
+          console.log(newAsistencia) 
+    })
     socket.on("message", newMessage => {
       const { body: { userMessage } } = newMessage
       const { body: { dataAllMessage } } = newMessage
@@ -84,11 +84,12 @@ const Home = () => {
 
   const handleClick = (key) => {
     const botones = document.querySelectorAll("#botones");
-
     if (mostrarMensajes) {
       botones.forEach((boton) => {
         boton.hidden=false;
         boton.innerHTML = "Ver Mensajes";
+        
+
       });
     } else { 
 
@@ -131,32 +132,38 @@ const Home = () => {
         xs={mostrarMensajes ? 12 : 24}
         sm={mostrarMensajes ? 12 : 24}
         md={mostrarMensajes ? 16 : 24}
-        lg={mostrarMensajes ? 12 : 24}
-        xl={mostrarMensajes ? 12: 24}
+        lg={mostrarMensajes ? 10 : 24}
+        xl={mostrarMensajes ? 10: 24}
 
       >
         <Table
+          // pagination={{ pageSize: 3 }}
         className="rowChats" columns={columns} rowKey={x => x.AsistenciaId} dataSource={dataTable
           .map((x) => {
             return {
               ...x,
+         
+              /*  TODO:
+              * 1. Validar si hay mensajes en el array de mensajes  y mostrar no hay mensajes nuevos 
+              * 2.Crear un objeto de un nuevo menaje y enviarlo al backend con un socket 
+              */
+              AsistenciaId: x.AsistenciaId?x.AsistenciaId:<Alert message="Crear un nuevo mensaje" type="error" />,
               MensajesNoLeidos: x.MensajesNoLeidos ? <Notification text={"Tienes mensajes nuevos"}/>
-            :
-              <Notification text={"No tienes mensajes nuevos"}/>
-
+            :<Notification text={"No tienes mensajes nuevos"}/>,
+            //mostrar el boton con la leyenda crear mensaje si no hay mensajes en el array de mensajes
+          /*     Acciones: x.Mensajes.length > 0 ? x.Acciones : <Button type="primary" id="botones" onClick={() => handleClick(x.key)}>Crear Mensaje</Button>
+               */
             }
+          
           })
-
         } />
-
-
       </Col>
       <Col
         xs={mostrarMensajes ? 8 : 0}
         sm={mostrarMensajes ? 8 : 0}
         md={mostrarMensajes ? 10 : 0}
-        lg={mostrarMensajes ? 12 : 0}
-        xl={mostrarMensajes ? 12 : 0}
+        lg={mostrarMensajes ? 14 : 0}
+        xl={mostrarMensajes ? 14 : 0}
       >
 
         {mostrarMensajes ? <Chat

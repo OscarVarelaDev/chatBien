@@ -52,18 +52,32 @@ export default function MostrarMensajes({
   const handleFinish = ({ userMessage }) => {
       const { EmisorNombre } = allNewMessages[0];
     const newMessage = {
-
-      "EmisorId": asistenciaId,
-      "EmisorNombre": EmisorNombre,
-      "Fecha": new Date().toISOString(),
-      "Mensaje": userMessage,
-      "Leido": true,
-      "TodosLosMensajes": allNewMessages
+      "body":{
+        "EmisorId": asistenciaId,
+        "EmisorNombre": EmisorNombre,
+        "Fecha": new Date().toISOString(),
+        "Mensaje": userMessage,
+        "Leido": true,
+        },
+      
+      "params":{"asistenciaId" : asistenciaId,}
+      //"TodosLosMensajes": allNewMessages
     }
+    console.log("Enviando nuevo mensaje",newMessage)
+/* 
+    const newAsistenciaData={
+      "ProveedorId": "Prov_0236",
+      "ProvedorNombre": "Gruas Oscar",
+      "AsistenciaId": "AIK_039",
+      "MensajesNoLeidos": false,
+      "Mensajes": [
+        
+        ]
+    } */
  
-
+    //socket.emit("newAsistencia", newAsistenciaData);
    // sendData(newMessage, asistenciaId);
-    socket.emit("message", { userMessage: newMessage, dataAllMessage });
+    socket.emit("message",  newMessage);
 
     const addNewMessage=allMessages.map((m)=>{
       return {
@@ -159,8 +173,8 @@ export default function MostrarMensajes({
                 display: "flex",
                 flexDirection: "column",
                 //separar lo mensajes
-                gap: "5px",
-                paddingBottom: "170px",
+                gap: "20px",
+                paddingBottom: "145px",
                 
                 
               }}>

@@ -9,6 +9,7 @@ function Chat({asistenciaId,
    setMostrarMensajes,
    mostrarMensajes,
    handleClick,
+   setNotification
    
   }) {
   const [isLoading, setIsLoading] = useState(true);
